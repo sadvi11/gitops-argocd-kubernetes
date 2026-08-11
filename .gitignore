@@ -1,0 +1,14 @@
+# Credentials — never commit
+.env
+.env.*
+*.pem
+*.key
+*.pfx
+*.kubeconfig
+kubeconfig*
+*.json
+
+# Local
+.DS_Store
+*.log
+tmp/

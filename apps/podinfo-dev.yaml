@@ -1,0 +1,33 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: podinfo-dev
+  namespace: argocd
+  annotations:
+    # Sync waves order the rollout: dev (wave 1) must land before prod (wave 2).
+    argocd.argoproj.io/sync-wave: "1"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/sadvi11/gitops-argocd-kubernetes.git
+    targetRevision: main
+    path: workloads/podinfo/overlays/dev
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: podinfo-dev
+  syncPolicy:
+    automated:
+      # prune: delete resources removed from git.
+      # selfHeal: revert changes made directly against the cluster.
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+    retry:
+      limit: 3
+      backoff:
+        duration: 10s
+        factor: 2
+        maxDuration: 2m

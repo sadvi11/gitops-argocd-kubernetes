@@ -1,0 +1,11 @@
+# Prod only. A PDB stops a node drain from taking every replica at once --
+# the classic way a "routine" cluster upgrade turns into an outage.
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: podinfo
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: podinfo

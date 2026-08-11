@@ -1,0 +1,10 @@
+# A three-node cluster, not one. A single-node cluster cannot demonstrate a
+# PodDisruptionBudget or anti-affinity doing anything, so prod would look
+# healthy for the wrong reason.
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+name: gitops
+nodes:
+  - role: control-plane
+  - role: worker
+  - role: worker

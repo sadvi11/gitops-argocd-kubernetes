@@ -1,0 +1,31 @@
+# The "app of apps" root. This is the only thing applied by hand -- everything
+# else in the cluster is created because this Application points at apps/,
+# which contains the child Applications. One bootstrap command, then git is
+# the only input.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: root
+  namespace: argocd
+  finalizers:
+    # Without this, deleting the root leaves every child orphaned in-cluster.
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/sadvi11/gitops-argocd-kubernetes.git
+    targetRevision: main
+    path: apps
+    directory:
+      recurse: false
+      # Do not treat the root itself as a child app.
+      exclude: root-app.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
