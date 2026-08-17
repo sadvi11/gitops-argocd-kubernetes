@@ -14,6 +14,37 @@ anything that drifts from it gets put back automatically.
 three-node cluster, installs Argo CD, syncs from this repo, then deliberately
 scales production down by hand and fails the build unless Argo CD reverts it.
 
+## What it actually proves
+
+This is the part worth reading, because "I set up Argo CD" is a claim and this
+is evidence. Real output from the [latest CI run](https://github.com/sadvi11/gitops-argocd-kubernetes/actions):
+
+```console
+DRIFT TEST - break the cluster by hand, expect Argo CD to revert it
+
+Scaling prod to 1 replica directly against the cluster (the thing
+you are told never to do). Argo CD should undo it without any push.
+deployment.apps/podinfo scaled
+1 <- drifted
+SELF-HEAL CONFIRMED after ~10s: replicas back to 3, no human involved.
+
+PRUNE TEST - a resource deleted from git is removed from the cluster
+configmap/orphan created
+configmap/orphan labeled
+orphan configmap created and labelled as part of the app
+PRUNE CONFIRMED after ~10s: resource absent from git was removed.
+```
+
+**Why it is done this way:** asserting that a manifest exists proves nothing
+about drift correction. You have to actually cause the drift. A test that
+passes whether or not the feature works is worse than no test, because it
+produces confidence without coverage.
+
+The pipeline fails the build if either behaviour does not happen within the
+timeout - and it runs on a throwaway cluster on free runners, so it re-proves
+itself on every commit rather than resting on a screenshot.
+
+
 ## Why pull beats push
 
 | | Push (CI runs `kubectl apply`) | Pull (Argo CD, this repo) |
