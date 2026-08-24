@@ -61,19 +61,33 @@ credentials to your cluster; this design has none to leak.
 ## Architecture
 
 ```mermaid
-flowchart LR
-    Dev[git push] --> Repo[(this repo)]
-    Repo -->|Argo CD polls| Root[root Application]
-    Root -->|app of apps| DevApp[podinfo-dev · wave 1]
-    Root -->|app of apps| ProdApp[podinfo-prod · wave 2]
-    DevApp --> NsDev[namespace podinfo-dev<br/>1 replica]
-    ProdApp --> NsProd[namespace podinfo-prod<br/>3 replicas + PDB]
-    Drift[manual kubectl change] -.->|detected| Root
-    Root -.->|self-heal| NsProd
+flowchart TD
+    Dev["git push"]
+    Repo[("this repo")]
+    Root["root Application"]
+    DevApp["podinfo-dev · wave 1"]
+    ProdApp["podinfo-prod · wave 2"]
+    NsDev["namespace podinfo-dev<br/>1 replica"]
+    NsProd["namespace podinfo-prod<br/>3 replicas + PDB"]
+    Drift["manual kubectl change"]
 
-    style Repo fill:#EF7B4D,color:#fff
-    style Root fill:#326CE5,color:#fff
-    style Drift fill:#c0392b,color:#fff
+    Dev --> Repo
+    Repo -->|"Argo CD polls"| Root
+    Root -->|"app of apps"| DevApp --> NsDev
+    Root -->|"app of apps"| ProdApp --> NsProd
+    Drift -.->|"detected"| Root
+    Root -.->|"self-heal"| NsProd
+
+    linkStyle default stroke:#64748b,stroke-width:1.5px
+    classDef default fill:#f8fafc,stroke:#64748b,stroke-width:2px,color:#0f172a
+    classDef ci    fill:#f5f3ff,stroke:#6d28d9,stroke-width:3px,color:#4c1d95
+    classDef k8s   fill:#eef2ff,stroke:#1d4ed8,stroke-width:3px,color:#1e3a8a
+    classDef ok    fill:#dcfce7,stroke:#15803d,stroke-width:3px,color:#14532d
+    classDef stop  fill:#fee2e2,stroke:#b91c1c,stroke-width:3px,color:#7f1d1d
+    class Repo ci
+    class Root k8s
+    class Drift stop
+    class NsDev,NsProd ok
 ```
 
 Only `apps/root-app.yaml` is ever applied by hand. It points at `apps/`, which
