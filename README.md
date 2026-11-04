@@ -166,6 +166,40 @@ can reach this workload.
 └── Makefile              # make help
 ```
 
+## What I'd change for production
+
+This is a local demo; these are the known gaps, not things already done:
+
+- **Secrets:** there are none here by design. Use Sealed Secrets or External
+  Secrets Operator rather than committing Secret manifests.
+- **Argo CD projects:** Applications use the built-in `default` project. Create
+  dedicated AppProjects that restrict source repos and destination namespaces.
+- **Release gate:** Applications track `main`. Pin `targetRevision` to a tag or
+  use protected-branch review so a merge is a deliberate release.
+- **Image integrity:** pin by digest and scan images in CI.
+- **Network policy:** ingress currently allows any namespace to reach port 9898
+  and egress is unrestricted; restrict both to known peers.
+- **Pod Security:** enforce the `restricted` Pod Security Standard on the
+  namespaces, not just in the manifests.
+- **Operations:** alert on sync failures and self-heal events, and agree a
+  break-glass process (pause auto-sync) for emergency manual changes.
+
+See [docs/adr/](docs/adr/) for the decisions behind the current design.
+
+## Cost notes
+
+Running it costs nothing: the cluster is local `kind` in Docker, and CI uses
+GitHub-hosted runners. A real deployment would be billed on the dimensions of
+the managed cluster you choose, for example the control-plane and node compute of
+[Amazon EKS](https://aws.amazon.com/eks/pricing/); see that page for current rates.
+
+## References
+
+- [Argo CD documentation](https://argo-cd.readthedocs.io/en/stable/)
+- [Kubernetes: Pod Security Standards](https://kubernetes.io/docs/concepts/security/pod-security-standards/)
+- [Kubernetes: Network Policies](https://kubernetes.io/docs/concepts/services-networking/network-policies/)
+- [Kustomize](https://kubectl.docs.kubernetes.io/references/kustomize/)
+
 ## Swapping in your own workload
 
 `workloads/podinfo` is a stand-in so this repo stays free to run and free to

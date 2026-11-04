@@ -23,8 +23,9 @@ spec:
           type: RuntimeDefault
       containers:
         - name: podinfo
-          # Pinned by tag AND digest: a mutable tag means the cluster and git
-          # can silently disagree about what is running, which defeats GitOps.
+          # Pinned to an explicit version tag (never :latest) so git states which
+          # release should run. Tags can still be re-pointed upstream; pinning by
+          # digest (image@sha256:...) would close that gap.
           image: ghcr.io/stefanprodan/podinfo:6.7.1
           imagePullPolicy: IfNotPresent
           ports:
