@@ -12,3 +12,14 @@ kubeconfig*
 .DS_Store
 *.log
 tmp/
+
+# State and secrets
+*.tfstate
+*.tfstate.*
+*.tfvars
+.terraform/
+
+# Python
+__pycache__/
+venv/
+.venv/
